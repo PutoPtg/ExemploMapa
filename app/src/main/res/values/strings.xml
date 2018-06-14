@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Exemplo Mapa</string>
+    <string name="gps_toggle">Ativar Localização</string>
+    <string name="extStg_toggle">Ativar Escrita Em Disco</string>
+    <string name="app_title">MENU</string>
+    <string name="map_butn">MAPA</string>
+    <string name="val_butn">VALORES</string>
 </resources>

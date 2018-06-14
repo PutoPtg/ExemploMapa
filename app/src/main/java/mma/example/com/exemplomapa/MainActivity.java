@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
 
     private VariablesClass myVariables;
     private Switch switchGPS;
+    private Switch switchSDC;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +37,14 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main); //Colocar após os dois anteriores para evitar crashes
 
         //inicializar variáveis
-        myVariables = new VariablesClass(0,0);
-        switchGPS = (Switch)findViewById(R.id.switch1);
-
+        myVariables = new VariablesClass(0, 0, 0);
+        switchGPS = (Switch) findViewById(R.id.switch1);
+        switchSDC = (Switch) findViewById(R.id.switch2);
 
         //passo 1 - Verificar a versão do SDK
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             verifyPermitions();
-        }else{
+        } else {
             switchGPS.setSaveEnabled(false);
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
@@ -51,15 +52,14 @@ public class MainActivity extends Activity {
     }
 
 
-
-    private void verifyPermitions(){
+    private void verifyPermitions() {
 
         //passo 2 - Verificar permissões
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
             //mensagem de toast que indica ao utilizador que a permissão foi dada
             Context context = getApplicationContext();
-            CharSequence text = "Localização ATIVA";
+            CharSequence text = "Localização e Escrita\nATIVAS";
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(context, text, duration);
             toast.show();
@@ -67,36 +67,47 @@ public class MainActivity extends Activity {
             //se sim, tem permissão e pode arrancar o mapa
 
             switchGPS.setChecked(true);
+            switchSDC.setChecked(true);
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
 
 
-        }else{
-            //não tem permissão, tem de ser pedida
-            switchGPS.setChecked(false);
-            Context context = getApplicationContext();
-            CharSequence text = "A aplicação não tem acesso à localização.\n Por favor ligue a localização para a aplicação funcionar.";
-            int duration = Toast.LENGTH_LONG;
-            Toast toast = Toast.makeText(context, text, duration);
-            toast.show();
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                //não tem permissão, tem de ser pedida
+                switchGPS.setChecked(false);
+                Context context = getApplicationContext();
+                CharSequence text = "A aplicação não tem acesso à localização.\n Por favor ligue a localização para a aplicação funcionar.";
+                int duration = Toast.LENGTH_LONG;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
 
-            switchGPS.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        // The toggle is enabled
-                        requestPermission();
-                    } else {
-                        //switchGPS.setEnabled(false);
+                switchGPS.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked) {
+                            // The toggle is enabled
+                            requestPermission(0);
+                        } else {
+                            //switchGPS.setEnabled(false);
+                        }
                     }
-                }
-            });
-
-
+                });
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                //não tem permissão, tem de ser pedida
+                switchSDC.setChecked(false);
+                Context context = getApplicationContext();
+                CharSequence text = "A aplicação não pode escrever.\n Por favor ligue a escrita para a aplicação funcionar.";
+                int duration = Toast.LENGTH_LONG;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+                requestPermission(1);
+            }
 
 
         }
 
-        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -105,7 +116,7 @@ public class MainActivity extends Activity {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 //utilizador negou permissão
                 boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
-                if(!showRationale){
+                if (!showRationale) {
                     //permissão negada e não voltar a perguntar
                     switchGPS.setChecked(false);
                     switchGPS.setEnabled(false);
@@ -124,13 +135,13 @@ public class MainActivity extends Activity {
                             startActivity(intent);
                         }
                     }).show();
-                AlertDialog alert = alertBuilder.create();
-                alert.show();
+                    AlertDialog alert = alertBuilder.create();
+                    alert.show();
 
-                }else {
+                } else {
 
-                        //permissão negada
-                        switchGPS.setChecked(false);
+                    //permissão negada
+                    switchGPS.setChecked(false);
                     AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                     alertBuilder.setCancelable(true);
                     alertBuilder.setTitle("Localização Negada.");
@@ -160,25 +171,95 @@ public class MainActivity extends Activity {
                 }
 
             } else {
-                Intent menuActivity = new Intent(this, MainMenu.class);
-                startActivity(menuActivity);
+                if (requestCode == myVariables.MY_SD_AUTH) {
+                    if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                        //utilizador negou permissão
+                        boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        if (!showRationale) {
+                            //permissão negada e não voltar a perguntar
+                            switchSDC.setChecked(false);
+                            switchSDC.setEnabled(false);
+
+                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                            alertBuilder.setCancelable(true);
+                            alertBuilder.setTitle("Escrita Negada.");
+                            alertBuilder.setMessage("A aplicação não funciona sem a escrita.\nTerá de fornecer permissões nas opções a partir de agora.");
+                            alertBuilder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent();
+                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                    intent.setData(uri);
+                                    startActivity(intent);
+                                }
+                            }).show();
+                            AlertDialog alert = alertBuilder.create();
+                            alert.show();
+
+                        } else {
+
+                            //permissão negada
+                            switchSDC.setChecked(false);
+                            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                            alertBuilder.setCancelable(true);
+                            alertBuilder.setTitle("Escrita Negada.");
+                            alertBuilder.setMessage("A aplicação não funciona sem a Escrita.\nTem a certeza que deseja continuar?");
+                            alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Context context = getApplicationContext();
+                                    CharSequence text = "Escrita NEGADA";
+                                    int duration = Toast.LENGTH_SHORT;
+                                    Toast toast = Toast.makeText(context, text, duration);
+                                    TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
+                                    v.setTextColor(Color.RED);
+                                    toast.show();
+                                }
+                            });
+                            alertBuilder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    ActivityCompat.requestPermissions(MainActivity.this,
+                                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                            myVariables.MY_SD_AUTH);
+                                }
+                            }).show();
+                        }
+
+                    }
+                }
+
             }
+
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Intent menuActivity = new Intent(this, MainMenu.class);
+            startActivity(menuActivity);
+        }
+
+    }
+
+    private void requestPermission(int i) {
+        //4 - Pedir permissão
+
+        if (i == 0) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, myVariables.MY_GPS_AUTH);
+        }
+        if (i == 1) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, myVariables.MY_SD_AUTH);
         }
     }
 
-        private void requestPermission(){
-            //4 - Pedir permissão
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, myVariables.MY_GPS_AUTH);
-        }
-
     @Override
-    protected void onRestart(){
+    protected void onRestart() {
 
         super.onRestart();
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             verifyPermitions();
-        }else{
+        } else {
             switchGPS.setSaveEnabled(false);
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
@@ -188,13 +269,13 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
 
         super.onStart();
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             verifyPermitions();
-        }else{
+        } else {
             switchGPS.setSaveEnabled(false);
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
@@ -204,13 +285,13 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
 
         super.onResume();
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             verifyPermitions();
-        }else{
+        } else {
             switchGPS.setSaveEnabled(false);
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
@@ -218,7 +299,6 @@ public class MainActivity extends Activity {
 
 
     }
-
 
 
 }
