@@ -58,11 +58,12 @@ public class MainActivity extends Activity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
             //mensagem de toast que indica ao utilizador que a permissão foi dada
-            Context context = getApplicationContext();
-            CharSequence text = "Localização e Escrita\nATIVAS";
-            int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(context, text, duration);
-            toast.show();
+
+                Context context = getApplicationContext();
+                CharSequence text = "Localização e Escrita\nATIVAS";
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
 
             //se sim, tem permissão e pode arrancar o mapa
 
@@ -73,14 +74,16 @@ public class MainActivity extends Activity {
 
 
         } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
                 //não tem permissão, tem de ser pedida
                 switchGPS.setChecked(false);
-                Context context = getApplicationContext();
-                CharSequence text = "A aplicação não tem acesso à localização.\n Por favor ligue a localização para a aplicação funcionar.";
-                int duration = Toast.LENGTH_LONG;
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+                if(shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    Context context = getApplicationContext();
+                    CharSequence text = "A aplicação não tem acesso à localização.\n Por favor ligue a localização para a aplicação funcionar.";
+                    int duration = Toast.LENGTH_SHORT;
+                    Toast toast = Toast.makeText(context, text, duration);
+                    toast.show();
+                }
 
                 switchGPS.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -93,15 +96,24 @@ public class MainActivity extends Activity {
                     }
                 });
             }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 //não tem permissão, tem de ser pedida
                 switchSDC.setChecked(false);
                 Context context = getApplicationContext();
                 CharSequence text = "A aplicação não pode escrever.\n Por favor ligue a escrita para a aplicação funcionar.";
-                int duration = Toast.LENGTH_LONG;
+                int duration = Toast.LENGTH_SHORT;
                 Toast toast = Toast.makeText(context, text, duration);
                 toast.show();
-                requestPermission(1);
+                switchSDC.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked) {
+                            // The toggle is enabled
+                            requestPermission(1);
+                        } else {
+                            //switchGPS.setEnabled(false);
+                        }
+                    }
+                });
             }
 
 
