@@ -5,4 +5,5 @@
     <string name="app_title">MENU</string>
     <string name="map_butn">MAPA</string>
     <string name="val_butn">VALORES</string>
+    <string name="toast_permissions">Esta Aplicação não funciona sem ter permissões de localização e acesso a dados do cartão SD</string>
 </resources>
