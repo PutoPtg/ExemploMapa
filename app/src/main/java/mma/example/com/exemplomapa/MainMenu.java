@@ -21,7 +21,7 @@ public class MainMenu extends Activity {
 
 
         final Button mapbutton = findViewById(R.id.map_btn);
-        button.setOnClickListener(new View.OnClickListener() {
+        mapbutton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Intent mapAct = new Intent(MainMenu.this, MapActivity.class);
@@ -30,7 +30,7 @@ public class MainMenu extends Activity {
         });
 
         final Button dataButton = findViewById(R.id.map_btn);
-        button.setOnClickListener(new View.OnClickListener() {
+        dataButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 Intent mapAct = new Intent(MainMenu.this, MapActivity.class);
