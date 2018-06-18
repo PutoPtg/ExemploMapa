@@ -8,7 +8,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 
-import mma.example.com.exemplomapa.MapActivity;
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
+
 
 
 public class MainMenu extends Activity {
@@ -37,6 +38,7 @@ public class MainMenu extends Activity {
                 startActivity(mapAct);
             }
         });
+
 
 
     }

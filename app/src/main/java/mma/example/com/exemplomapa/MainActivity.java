@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -41,6 +42,10 @@ public class MainActivity extends Activity {
         switchGPS = (Switch) findViewById(R.id.switch1);
         switchSDC = (Switch) findViewById(R.id.switch2);
 
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putLong("Zoom", 12);
+        editor.commit();
 
         //passo 1 - Verificar a versão do SDK
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
