@@ -16,6 +16,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
 }
 
 dependencies {
@@ -29,4 +34,5 @@ dependencies {
     implementation 'org.osmdroid:osmdroid-wms:6.0.1'
     implementation 'org.osmdroid:osmdroid-mapsforge:6.0.1'
     implementation 'org.osmdroid:osmdroid-geopackage:6.0.1'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:6.1.3'
 }

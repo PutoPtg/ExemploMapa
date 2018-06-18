@@ -30,12 +30,12 @@ public class MainMenu extends Activity {
             }
         });
 
-        final Button dataButton = findViewById(R.id.map_btn);
+        final Button dataButton = findViewById(R.id.values_btn);
         dataButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                Intent mapAct = new Intent(MainMenu.this, MapActivity.class);
-                startActivity(mapAct);
+                Intent mapAct2 = new Intent(MainMenu.this, MapBoxActivity.class);
+                startActivity(mapAct2);
             }
         });
 

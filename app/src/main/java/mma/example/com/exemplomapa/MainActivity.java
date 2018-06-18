@@ -44,7 +44,8 @@ public class MainActivity extends Activity {
 
         SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putLong("Zoom", 12);
+        double Zoom = 12;
+        editor.putLong("Zoom", Double.doubleToRawLongBits(Zoom));
         editor.commit();
 
         //passo 1 - Verificar a versão do SDK
