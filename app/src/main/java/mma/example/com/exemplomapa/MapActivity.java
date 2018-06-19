@@ -51,6 +51,8 @@ public class MapActivity extends Activity {
         startPoint = new GeoPoint(40.192756, -8.4143277);
         mapController.setCenter(startPoint);
 
+
+        @SuppressWarnings("deprecation")
         RotationGestureOverlay myRotations = new RotationGestureOverlay(ctx, map);
         myRotations.setEnabled(true);
         map.setMultiTouchControls(true);

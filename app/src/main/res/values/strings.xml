@@ -2,8 +2,11 @@
     <string name="app_name">Exemplo Mapa</string>
     <string name="gps_toggle">Ativar Localização</string>
     <string name="extStg_toggle">Ativar Escrita Em Disco</string>
+    <string name="nomeApp">Demonstração de Mapas</string>
     <string name="app_title">MENU</string>
-    <string name="map_butn">MAPA</string>
-    <string name="val_butn">VALORES</string>
+    <string name="map_butn">OSMaps</string>
+    <string name="val_butn">MapBox</string>
     <string name="toast_permissions">Esta Aplicação não funciona sem ter permissões de localização e acesso a dados do cartão SD</string>
+    <string name="onde_estou">Onde Estou?</string>
+    <string name="noite_dia">Noite ou Dia</string>
 </resources>

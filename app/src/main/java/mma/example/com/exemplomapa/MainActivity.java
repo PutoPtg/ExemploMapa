@@ -318,9 +318,5 @@ public class MainActivity extends Activity {
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
         }
-
-
     }
-
-
 }
