@@ -73,9 +73,7 @@ public class MainActivity extends Activity {
                 Toast toast = Toast.makeText(context, text, duration);
                 toast.show();
 
-
             //se sim, tem permissão e pode arrancar o mapa
-
             switchGPS.setChecked(true);
             switchSDC.setChecked(true);
             Intent menuActivity = new Intent(this, MainMenu.class);
@@ -94,8 +92,6 @@ public class MainActivity extends Activity {
                     toast.show();
                 }
             }
-
-
 
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_DENIED) {
                     //não tem permissão, tem de ser pedida
@@ -286,8 +282,6 @@ public class MainActivity extends Activity {
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
         }
-
-
     }
 
     @Override
@@ -302,8 +296,6 @@ public class MainActivity extends Activity {
             Intent menuActivity = new Intent(this, MainMenu.class);
             startActivity(menuActivity);
         }
-
-
     }
 
     @Override

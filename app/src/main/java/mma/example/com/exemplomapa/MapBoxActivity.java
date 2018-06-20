@@ -29,6 +29,7 @@ import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.constants.Style;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
@@ -61,13 +62,8 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
 
     DirectionsRoute currentRoute;
 
-
-
     private Button mapButton;
     private Button navButton;
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,9 +77,9 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         setContentView(R.layout.map_box_view);
 
         //janela do mapa
-        mapView = (MapView) findViewById(R.id.mapViewBox);
+        mapView = findViewById(R.id.mapViewBox);
         mapView.onCreate(savedInstanceState);
-
+        mapView.setStyleUrl(Style.DARK);
 
         mapView.getMapAsync(this);
 
@@ -246,7 +242,11 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
 
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
+
+
         map = mapboxMap;
+
+
         map.addOnMapClickListener(this);
 
         enableLocation();
@@ -258,9 +258,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         if(destinationMarker != null){
             map.removeMarker(destinationMarker);
         }
-        else{
 
-        }
 
         destinationMarker = map.addMarker(new MarkerOptions().position(point));
 
@@ -299,9 +297,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                                 navigationMapRoute = new NavigationMapRoute(null, mapView, map);
                             }
                             navigationMapRoute.addRoute(currentRoute);
-
                         }
-
                     }
 
                     @Override
