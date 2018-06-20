@@ -2,16 +2,19 @@ package mma.example.com.exemplomapa;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
-
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineListener;
@@ -19,19 +22,30 @@ import com.mapbox.android.core.location.LocationEnginePriority;
 import com.mapbox.android.core.location.LocationEngineProvider;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
+import com.mapbox.api.directions.v5.models.DirectionsResponse;
+import com.mapbox.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
-import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
+import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
+import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 
 import java.util.List;
 
-public class MapBoxActivity extends Activity implements OnMapReadyCallback, LocationEngineListener, PermissionsListener {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class MapBoxActivity extends Activity implements OnMapReadyCallback, LocationEngineListener, PermissionsListener, MapboxMap.OnMapClickListener {
 
     private MapView mapView;
     private MapboxMap map;
@@ -39,25 +53,69 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     private LocationEngine locationEngine;
     private LocationLayerPlugin locationLayerPlugin;
     private Location originLocation;
+    private Point originPosition;
+    private Point destinationPosition;
+    private Marker destinationMarker;
+    private NavigationMapRoute navigationMapRoute;
+    private static final String TAG = "MapBoxActivity";
+
+    DirectionsRoute currentRoute;
+
+
+
+    private Button mapButton;
+    private Button navButton;
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE); //esconde o título da janela
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); //remove barra de notificação
-        Mapbox.getInstance(this, "pk.eyJ1IjoibWFudWVsYW1hZG8iLCJhIjoiY2ppa2I2ZTVnMjA5cTNxb3lqdTR2OHZkcSJ9.zJjjEQqQMOymfYKZUKzhkA");
+
+        //chave num ficheiro não colocado no git
+        Mapbox.getInstance(this, getString(R.string.mapbox_key));
         setContentView(R.layout.map_box_view);
+
+        //janela do mapa
         mapView = (MapView) findViewById(R.id.mapViewBox);
         mapView.onCreate(savedInstanceState);
 
-        final Button mapbutton = findViewById(R.id.OE);
-        mapbutton.setOnClickListener(new View.OnClickListener() {
+
+        mapView.getMapAsync(this);
+
+        //botão para ir para o local presente do utilizdor
+        mapButton = findViewById(R.id.OE);
+        mapButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                setCameraPosition(originLocation);
+                if(originLocation!=null){
+                    setCameraPosition(originLocation);
+                }else{
+                    Context context = getApplicationContext();
+                    CharSequence text = "À espera de GPS";
+                    int duration = Toast.LENGTH_SHORT;
+                    Toast toast = Toast.makeText(context, text, duration);
+                    TextView vt = (TextView) toast.getView().findViewById(android.R.id.message);
+                    vt.setTextColor(Color.WHITE);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                }
+
             }
         });
-        mapView.getMapAsync(this);
+
+
+        navButton = findViewById(R.id.navBtn);
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                NavigationLauncherOptions options = NavigationLauncherOptions.builder().directionsRoute(currentRoute).shouldSimulateRoute(true).build();
+                NavigationLauncher.startNavigation(MapBoxActivity.this, options);
+            }
+        });
     }
 
     private void enableLocation(){
@@ -189,7 +247,68 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
         map = mapboxMap;
+        map.addOnMapClickListener(this);
+
         enableLocation();
+    }
+
+    @Override
+    public void onMapClick(@NonNull LatLng point){
+
+        if(destinationMarker != null){
+            map.removeMarker(destinationMarker);
+        }
+        else{
+
+        }
+
+        destinationMarker = map.addMarker(new MarkerOptions().position(point));
+
+        destinationPosition = Point.fromLngLat(point.getLongitude(), point.getLatitude());
+        originPosition = Point.fromLngLat(originLocation.getLongitude(), originLocation.getLatitude());
+
+        getRoute(originPosition, destinationPosition);
+        navButton.setEnabled(true);
+
+
+    }
+    private  void getRoute(Point origin,  Point destination){
+        NavigationRoute.builder(this)
+                .accessToken(Mapbox.getAccessToken())
+                .origin(origin)
+                .destination(destination)
+                .build()
+                .getRoute(new Callback<DirectionsResponse>() {
+                    @Override
+                    public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
+                        if(response.body()
+                                == null){
+                            Log.e(TAG, "FAIL! No Routes Found");
+                            return;
+                        }else{
+                            if(response.body().routes().size() == 0){
+                                Log.e(TAG, "No Routes Found");
+                                return;
+                            }
+
+                            currentRoute = response.body().routes().get(0);
+
+                            if(navigationMapRoute != null){
+                                navigationMapRoute.removeRoute();
+                            }else {
+                                navigationMapRoute = new NavigationMapRoute(null, mapView, map);
+                            }
+                            navigationMapRoute.addRoute(currentRoute);
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<DirectionsResponse> call, Throwable t) {
+                        Log.e(TAG, "Error: " + t.getMessage());
+                    }
+                });
     }
 }
 
