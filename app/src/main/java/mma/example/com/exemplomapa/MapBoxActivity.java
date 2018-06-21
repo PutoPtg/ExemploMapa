@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,6 +62,10 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     private NavigationMapRoute navigationMapRoute;
     private static final String TAG = "MapBoxActivity";
 
+
+    private Switch switchDark;
+
+
     DirectionsRoute currentRoute;
 
     private Button mapButton;
@@ -79,7 +85,8 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         //janela do mapa
         mapView = findViewById(R.id.mapViewBox);
         mapView.onCreate(savedInstanceState);
-        mapView.setStyleUrl(Style.DARK);
+
+
 
         mapView.getMapAsync(this);
 
@@ -112,6 +119,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                 NavigationLauncher.startNavigation(MapBoxActivity.this, options);
             }
         });
+        Log.i("ONCREATE", "FINISHED");
     }
 
     private void enableLocation(){
@@ -126,9 +134,19 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     }
 
     private void  initializeLocationEngine(){
-        locationEngine = new LocationEngineProvider(this).obtainBestLocationEngineAvailable();
-        locationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
-        locationEngine.activate();
+        try {
+            locationEngine = new LocationEngineProvider(this).obtainBestLocationEngineAvailable();
+            locationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
+            locationEngine.activate();
+        }
+        catch(Exception e){
+            Log.i ("erro", e.getMessage());
+        }
+        if(locationEngine == null)
+        {
+            Log.i ("LOCALENGINE", "LOCAL ENGINE NULL");
+        }
+
 
         @SuppressLint("MissingPermission")
         Location lastLocation = locationEngine.getLastLocation();
@@ -138,6 +156,9 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         }
         else{
             locationEngine.addLocationEngineListener(this);
+        }
+        if(locationEngine == null) {
+            Log.i("ONSTOP", "MIM AQUI");
         }
     }
 
@@ -168,6 +189,16 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
             locationLayerPlugin.onStart();
         }
         mapView.onStart();
+        Log.i("ONSTART", "PASSOU!");
+    }
+
+
+    @Override
+    public void  onRestart(){
+        super.onRestart();
+        Log.i("ONRESTART", "PASSOU!");
+
+
     }
 
     @Override
@@ -179,6 +210,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     public void onPause() {
         super.onPause();
+        Log.i("PAUSE", "MIM AQUI");
         mapView.onPause();
     }
 
@@ -191,6 +223,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         if(locationLayerPlugin != null){
             locationLayerPlugin.onStop();
         }
+        Log.i("ONSTOP", "MIM AQUI");
         mapView.onStop();
     }
 
@@ -206,13 +239,16 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         if(locationEngine != null){
             locationEngine.deactivate();
         }
+        Log.i("ONDESTROY", "MIM AQUI");
         mapView.onDestroy();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        Log.i("SISt", "MIM AQUI");
         mapView.onSaveInstanceState(outState);
+
     }
 
     @Override
@@ -249,6 +285,20 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
 
         map.addOnMapClickListener(this);
 
+        /*switchDark = (Switch) findViewById(R.id.DeN);
+
+        switchDark.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked != false) {
+                    // The toggle is enabled
+                    map.setStyleUrl(Style.DARK);
+                }
+                else{
+                    map.setStyleUrl(Style.LIGHT);
+                }
+            }
+        });*/
+
         enableLocation();
     }
 
@@ -259,15 +309,17 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
             map.removeMarker(destinationMarker);
         }
 
-
         destinationMarker = map.addMarker(new MarkerOptions().position(point));
 
         destinationPosition = Point.fromLngLat(point.getLongitude(), point.getLatitude());
-        originPosition = Point.fromLngLat(originLocation.getLongitude(), originLocation.getLatitude());
 
-        getRoute(originPosition, destinationPosition);
-        navButton.setEnabled(true);
-
+        try {
+            originPosition = Point.fromLngLat(originLocation.getLongitude(), originLocation.getLatitude());
+            getRoute(originPosition, destinationPosition);
+            navButton.setEnabled(true);
+        }catch(Exception sem_posIni){
+            Log.e("ERRO!", "Sem Posição inicial");
+        }
 
     }
     private  void getRoute(Point origin,  Point destination){
