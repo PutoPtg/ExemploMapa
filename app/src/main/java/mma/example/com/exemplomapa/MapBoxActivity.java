@@ -5,10 +5,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -77,22 +79,43 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        runFlag = 0;
+
 
         super.onCreate(savedInstanceState);
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE); //esconde o título da janela
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); //remove barra de notificação
+        runFlag = 0;
+        MapBoxActivity.this.requestWindowFeature(Window.FEATURE_NO_TITLE); //esconde o título da janela
+        MapBoxActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); //remove barra de notificação
 
         //chave num ficheiro não colocado no git
-        Mapbox.getInstance(this, getString(R.string.mapbox_key));
+        Mapbox.getInstance(MapBoxActivity.this, getString(R.string.mapbox_key));
         setContentView(R.layout.map_box_view);
 
         //janela do mapa
-        mapView = findViewById(R.id.mapViewBox);
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mapView = findViewById(R.id.mapViewBox);
+            Context context = getApplicationContext();
+            CharSequence text = "Retrato";
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, text, duration);
+            TextView vt = toast.getView().findViewById(android.R.id.message);
+            vt.setTextColor(Color.WHITE);
+            toast.setGravity(Gravity.BOTTOM, 0, 0);
+            toast.show();
+        }else{
+            mapView = findViewById(R.id.mapViewBoxLand);
+            Context context = getApplicationContext();
+            CharSequence text = "Paisagem";
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, text, duration);
+            TextView vt = toast.getView().findViewById(android.R.id.message);
+            vt.setTextColor(Color.WHITE);
+            toast.setGravity(Gravity.BOTTOM, 0, 0);
+            toast.show();
+        }
 
         mapView.onCreate(savedInstanceState);
 
-        mapView.getMapAsync(this);//->aqui chama o onMapReady
+        mapView.getMapAsync(MapBoxActivity.this);//->aqui chama o onMapReady
 
         if((savedInstanceState != null) && (savedInstanceState.getSerializable("currentRoute") != null)
                 && (savedInstanceState.getSerializable("origin") != null)
@@ -105,7 +128,14 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         }
 
         //botão para ir para o local presente do utilizdor
-        Button mapButton = findViewById(R.id.OE);
+        Button mapButton;
+
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            mapButton = findViewById(R.id.OE);
+        }else{
+            mapButton = findViewById(R.id.OEL);
+        }
+
         mapButton.setOnClickListener(v -> {
             if(originLocation!=null){
                 setCameraPosition(originLocation);
@@ -122,8 +152,11 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
 
         });
 
-
-        navButton = findViewById(R.id.navBtn);
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            navButton = findViewById(R.id.navBtn);
+        }else{
+            navButton = findViewById(R.id.navBtnL);
+        }
 
         navButton.setOnClickListener(view -> {
             NavigationLauncherOptions options = NavigationLauncherOptions.builder().directionsRoute(currentRoute).shouldSimulateRoute(true).build();
@@ -140,10 +173,10 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
      * ************************************/
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
-        map = mapboxMap;
-        map.addOnMapClickListener(this);
-        enableLocation();
 
+        map = mapboxMap;
+
+        enableLocation();
 
         if(runFlag == 1) {
             android.util.Log.i("Atchim!", "Santinho!");
@@ -151,12 +184,13 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
             LatLng point = new LatLng(destinationPosition.latitude(), destinationPosition.longitude());
             destinationMarker = map.addMarker(new MarkerOptions().position(point));
             try {
-                getRoute(originPosition, destinationPosition);
+                navigationMapRoute = new NavigationMapRoute( mapView, map);
+                navigationMapRoute.addRoute(currentRoute);
             }catch(Exception e){
                 android.util.Log.e("Falhou", "Falha ao redesenhar rota: "+ e.getMessage());
             }
         }
-
+        map.addOnMapClickListener(MapBoxActivity.this);
 
         //secção do botão switch
         /*switchDark = (Switch) findViewById(R.id.DeN);
@@ -177,23 +211,30 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     public void onMapClick(@NonNull LatLng point){
 
-        if(destinationMarker != null){
-            map.removeMarker(destinationMarker);
-        }
+        //if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if (destinationMarker != null) {
+                map.removeMarker(destinationMarker);
+            }
+            destinationMarker = map.addMarker(new MarkerOptions().position(point));
+            destinationPosition = Point.fromLngLat(point.getLongitude(), point.getLatitude());
 
-        destinationMarker = map.addMarker(new MarkerOptions().position(point));
-
-        destinationPosition = Point.fromLngLat(point.getLongitude(), point.getLatitude());
-
-
-        try {
-            originPosition = Point.fromLngLat(originLocation.getLongitude(), originLocation.getLatitude());
-            getRoute(originPosition, destinationPosition);
-            navButton.setEnabled(true);
-        }catch(Exception sem_posIni){
-            Timber.e( "Sem Posição inicial");
-        }
-
+            try {
+                originPosition = Point.fromLngLat(originLocation.getLongitude(), originLocation.getLatitude());
+                getRoute(originPosition, destinationPosition);
+                navButton.setEnabled(true);
+            } catch (Exception sem_posIni) {
+                Timber.e("Sem Posição inicial");
+            }
+        /*}else{
+            Context context = getApplicationContext();
+            CharSequence text = "Toque Desabilitado/nVire para retrato para activar.";
+            int duration = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, text, duration);
+            TextView vt = toast.getView().findViewById(android.R.id.message);
+            vt.setTextColor(Color.WHITE);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+        }*/
     }
 
     private  void getRoute(Point origin,  Point destination){
@@ -201,7 +242,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         //segurança para o cálculo não ser interrompido a meio
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
-        NavigationRoute.builder(this)
+        NavigationRoute.builder(MapBoxActivity.this)
                 .accessToken(Mapbox.getAccessToken())
                 .origin(origin)
                 .destination(destination)
@@ -211,34 +252,30 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                     public void onResponse(@NonNull Call<DirectionsResponse> call, @NonNull Response<DirectionsResponse> response) {
                         if(response.body() == null){
                             Timber.e("FAIL! No Routes Found");
+                            android.util.Log.e("UIUIUIUIUIUIIIII", "Lista Vazia");
                             return;
                         }else{
                             if(response.body().routes().size() == 0){
                                 Timber.e("No Routes Found");
+                                android.util.Log.e("UIUIUIUIUIUIIIII", "Não há Caminho");
                                 return;
                             }
-
                             try {
                                 currentRoute = response.body().routes().get(0);
                             }catch(NullPointerException e){
                                 Timber.e("Bad Route, Null Pointer");
                             }
                             if(navigationMapRoute != null){
+                                android.util.Log.i("UIUIUIUIUIUIIIII", "Hello!");
                                 navigationMapRoute.removeRoute();
                             }else {
-                                try{
-                                    navigationMapRoute = new NavigationMapRoute(null, mapView, map);
-                                }catch (Exception e){
-                                    android.util.Log.e("UIUIUIUIUIUIIIII", "Pára de rodar!!!!" + e.getMessage());
-                                    recreate();
-                                }
+                                    navigationMapRoute = new NavigationMapRoute( mapView, map);
                             }
                             try {
                                 navigationMapRoute.addRoute(currentRoute);
                             }catch(Exception e){
                                 android.util.Log.e("UIUIUIUIUIUIIIII", "Já Chega!" + e.getMessage());
-                                recreate();
-
+                                //return;
                             }
                         }
                     }
@@ -246,6 +283,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                     @Override
                     public void onFailure(@NonNull Call<DirectionsResponse> call, @NonNull Throwable t) {
                         Timber.e( "Error: %s", t.getMessage());
+                        android.util.Log.e("UIUIUIUIUIUIIIII", "Sem Comunicação" + t.getMessage());
                     }
                 });
         //segurança para o cálculo não ser interrompido a meio
@@ -260,13 +298,13 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
      *
      * ************************************/
     private void enableLocation(){
-        if(PermissionsManager.areLocationPermissionsGranted(this)){
+        if(PermissionsManager.areLocationPermissionsGranted(MapBoxActivity.this)){
             initializeLocationEngine();
             initializeLocationLayer();
         }
         else{
-            permissionsManager = new PermissionsManager(this);
-            permissionsManager.requestLocationPermissions(this);
+            permissionsManager = new PermissionsManager(MapBoxActivity.this);
+            permissionsManager.requestLocationPermissions(MapBoxActivity.this);
         }
     }
 
@@ -277,7 +315,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
      * ************************************/
     private void  initializeLocationEngine(){
         try {
-            locationEngine = new LocationEngineProvider(this).obtainBestLocationEngineAvailable();
+            locationEngine = new LocationEngineProvider(MapBoxActivity.this).obtainBestLocationEngineAvailable();
             locationEngine.setPriority(LocationEnginePriority.HIGH_ACCURACY);
             locationEngine.activate();
         }
@@ -298,7 +336,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
 
         }
         else{
-            locationEngine.addLocationEngineListener(this);
+            locationEngine.addLocationEngineListener(MapBoxActivity.this);
         }
         if(locationEngine == null) {
             Timber.i("ONSTOP");
@@ -441,11 +479,17 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         map.removeMarker(destinationMarker);
         }
         if(map != null){
+
+            map.removeOnMapClickListener(MapBoxActivity.this);
             map.clear();
         }
         if(mapView != null){
             mapView.onDestroy();
         }
+        if(navigationMapRoute != null){
+            navigationMapRoute.removeRoute();
+        }
+
 
     }
 
@@ -464,15 +508,14 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Timber.i("Saved Instances");
-        mapView.onSaveInstanceState(outState);
 
         outState.putSerializable("currentRoute", currentRoute);
         outState.putSerializable("origin", originPosition);
         outState.putSerializable("destination", destinationPosition);
 
-    }
-
+        mapView.onSaveInstanceState(outState);
+        Timber.i("Saved Instances");
+}
 }
 
 

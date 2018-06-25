@@ -24,7 +24,7 @@
         mapbox:layout_constraintVertical_bias="0.0"
         mapbox:mapbox_cameraTargetLat="40.192756"
         mapbox:mapbox_cameraTargetLng="-8.4143277"
-        mapbox:mapbox_cameraZoom="15"
+        mapbox:mapbox_cameraZoom="12"
 
         mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10"
 
