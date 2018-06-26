@@ -29,7 +29,10 @@
         </activity>
         <activity android:name=".MapActivity">
         </activity>
-        <activity android:name=".MapBoxActivity"></activity>
+        <activity android:name=".MapBoxActivity">
+        </activity>
+        <activity android:name=".MapBoxFragments">
+        </activity>
     </application>
 
 </manifest>

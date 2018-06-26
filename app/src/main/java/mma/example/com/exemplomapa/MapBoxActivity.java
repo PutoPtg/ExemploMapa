@@ -42,14 +42,20 @@ import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
 
+import android.util.Log;
+import timber.log.Timber;
+
+import static timber.log.Timber.DebugTree;
+
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import timber.log.Timber;
 
-public class MapBoxActivity extends Activity implements OnMapReadyCallback, LocationEngineListener, PermissionsListener, MapboxMap.OnMapClickListener {
+
+public class MapBoxActivity extends Activity implements OnMapReadyCallback, LocationEngineListener,
+        PermissionsListener, MapboxMap.OnMapClickListener {
 
     private MapView mapView;
     private MapboxMap map;
@@ -57,20 +63,17 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     private LocationEngine locationEngine;
     private LocationLayerPlugin locationLayerPlugin;
     private Location originLocation;
+
     private Point originPosition;
     private Point destinationPosition;
     private Marker destinationMarker;
     private NavigationMapRoute navigationMapRoute;
-
-
-    private int runFlag;
     private DirectionsRoute currentRoute;
 
-    private Button navButton;
+    private int runFlag;  //nota de recuperação para correr apenas uma vez
+    private Button navButton; //botão de Navegação
 
-    private SharedPreferences preferences;
-
-
+    private boolean DEBUG;
     /*************************************
      *
      *      On Create
@@ -79,9 +82,20 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        /*
+        * DEBUG Variable
+        */
 
+        DEBUG = true;
+            Timber.plant(new DebugTree());
+            
+
+        /*
+         * DEBUG Variable
+         */
 
         super.onCreate(savedInstanceState);
+
         runFlag = 0;
         MapBoxActivity.this.requestWindowFeature(Window.FEATURE_NO_TITLE); //esconde o título da janela
         MapBoxActivity.this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); //remove barra de notificação
@@ -90,33 +104,43 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         Mapbox.getInstance(MapBoxActivity.this, getString(R.string.mapbox_key));
         setContentView(R.layout.map_box_view);
 
-        //janela do mapa
+
+        //janela do mapa - Portrait ou Landscape
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+
             mapView = findViewById(R.id.mapViewBox);
-            Context context = getApplicationContext();
-            CharSequence text = "Retrato";
-            int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(context, text, duration);
-            TextView vt = toast.getView().findViewById(android.R.id.message);
-            vt.setTextColor(Color.WHITE);
-            toast.setGravity(Gravity.BOTTOM, 0, 0);
-            toast.show();
+
+            if(DEBUG) {
+                Context context = getApplicationContext();
+                CharSequence text = "Retrato";
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, text, duration);
+                TextView vt = toast.getView().findViewById(android.R.id.message);
+                vt.setTextColor(Color.WHITE);
+                toast.setGravity(Gravity.BOTTOM, 0, 0);
+                toast.show();
+            }
         }else{
+
             mapView = findViewById(R.id.mapViewBoxLand);
-            Context context = getApplicationContext();
-            CharSequence text = "Paisagem";
-            int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(context, text, duration);
-            TextView vt = toast.getView().findViewById(android.R.id.message);
-            vt.setTextColor(Color.WHITE);
-            toast.setGravity(Gravity.BOTTOM, 0, 0);
-            toast.show();
+
+            if(DEBUG) {
+                Context context = getApplicationContext();
+                CharSequence text = "Paisagem";
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, text, duration);
+                TextView vt = toast.getView().findViewById(android.R.id.message);
+                vt.setTextColor(Color.WHITE);
+                toast.setGravity(Gravity.BOTTOM, 0, 0);
+                toast.show();
+            }
         }
 
         mapView.onCreate(savedInstanceState);
 
         mapView.getMapAsync(MapBoxActivity.this);//->aqui chama o onMapReady
 
+        //Recuperação de dados Guardados
         if((savedInstanceState != null) && (savedInstanceState.getSerializable("currentRoute") != null)
                 && (savedInstanceState.getSerializable("origin") != null)
                 && (savedInstanceState.getSerializable("destination") != null)
@@ -136,6 +160,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
             mapButton = findViewById(R.id.OEL);
         }
 
+        //listener do botão de utilizador
         mapButton.setOnClickListener(v -> {
             if(originLocation!=null){
                 setCameraPosition(originLocation);
@@ -152,6 +177,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
 
         });
 
+        //Botão para activar a vavegação
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             navButton = findViewById(R.id.navBtn);
         }else{
@@ -163,7 +189,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
             NavigationLauncher.startNavigation(MapBoxActivity.this, options);
         });
 
-        Timber.i("ONCREATE");
+        Timber.wtf("ONCREATE");
     }
 
     /*************************************
@@ -179,7 +205,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         enableLocation();
 
         if(runFlag == 1) {
-            android.util.Log.i("Atchim!", "Santinho!");
+
             runFlag = 0;
             LatLng point = new LatLng(destinationPosition.latitude(), destinationPosition.longitude());
             destinationMarker = map.addMarker(new MarkerOptions().position(point));
@@ -187,7 +213,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                 navigationMapRoute = new NavigationMapRoute( mapView, map);
                 navigationMapRoute.addRoute(currentRoute);
             }catch(Exception e){
-                android.util.Log.e("Falhou", "Falha ao redesenhar rota: "+ e.getMessage());
+                Timber.e( "Falha ao redesenhar rota: "+ e.getMessage());
             }
         }
         map.addOnMapClickListener(MapBoxActivity.this);
@@ -252,12 +278,10 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                     public void onResponse(@NonNull Call<DirectionsResponse> call, @NonNull Response<DirectionsResponse> response) {
                         if(response.body() == null){
                             Timber.e("FAIL! No Routes Found");
-                            android.util.Log.e("UIUIUIUIUIUIIIII", "Lista Vazia");
                             return;
                         }else{
                             if(response.body().routes().size() == 0){
                                 Timber.e("No Routes Found");
-                                android.util.Log.e("UIUIUIUIUIUIIIII", "Não há Caminho");
                                 return;
                             }
                             try {
@@ -266,7 +290,6 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                                 Timber.e("Bad Route, Null Pointer");
                             }
                             if(navigationMapRoute != null){
-                                android.util.Log.i("UIUIUIUIUIUIIIII", "Hello!");
                                 navigationMapRoute.removeRoute();
                             }else {
                                     navigationMapRoute = new NavigationMapRoute( mapView, map);
@@ -274,8 +297,8 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
                             try {
                                 navigationMapRoute.addRoute(currentRoute);
                             }catch(Exception e){
-                                android.util.Log.e("UIUIUIUIUIUIIIII", "Já Chega!" + e.getMessage());
-                                //return;
+                                Timber.e ("AQUI : " + e.getMessage());
+
                             }
                         }
                     }
@@ -324,7 +347,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         }
         if(locationEngine == null)
         {
-            Timber.i ("LOCAL ENGINE NULL");
+            Timber.wtf ("LOCAL ENGINE NULL");
         }
 
 
@@ -339,7 +362,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
             locationEngine.addLocationEngineListener(MapBoxActivity.this);
         }
         if(locationEngine == null) {
-            Timber.i("ONSTOP");
+            Timber.wtf("ONSTOP");
         }
     }
 
@@ -417,7 +440,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         }
 
         mapView.onStart();
-        Timber.i("ONSTART");
+        Timber.wtf("ONSTART");
     }
 
     /**************************************
@@ -426,7 +449,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     public void  onRestart(){
         super.onRestart();
-        Timber.i("ONRESTART");
+        Timber.wtf("ONRESTART");
     }
 
     /**************************************
@@ -445,7 +468,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
     @Override
     public void onPause() {
         super.onPause();
-        Timber.i("OnPause");
+        Timber.wtf("OnPause");
         mapView.onPause();
     }
 
@@ -461,7 +484,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         if(locationLayerPlugin != null){
             locationLayerPlugin.onStop();
         }
-        Timber.i("ONSTOP");
+        Timber.wtf("ONSTOP");
         mapView.onStop();
     }
 
@@ -474,7 +497,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         if(locationEngine != null){
             locationEngine.deactivate();
         }
-        Timber.i("On Destroy");
+        Timber.wtf("On Destroy");
         if(destinationMarker!=null){
         map.removeMarker(destinationMarker);
         }
@@ -514,7 +537,7 @@ public class MapBoxActivity extends Activity implements OnMapReadyCallback, Loca
         outState.putSerializable("destination", destinationPosition);
 
         mapView.onSaveInstanceState(outState);
-        Timber.i("Saved Instances");
+        Timber.wtf("Saved Instances");
 }
 }
 

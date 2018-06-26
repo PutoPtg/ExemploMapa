@@ -22,9 +22,9 @@
         mapbox:layout_constraintStart_toStartOf="parent"
         mapbox:layout_constraintTop_toTopOf="parent"
         mapbox:layout_constraintVertical_bias="0.0"
-        mapbox:mapbox_cameraTargetLat="40.192756"
-        mapbox:mapbox_cameraTargetLng="-8.4143277"
-        mapbox:mapbox_cameraZoom="12"
+        mapbox:mapbox_cameraTargetLat="@string/start_lat"
+        mapbox:mapbox_cameraTargetLng="@string/start_long"
+        mapbox:mapbox_cameraZoom="@integer/start_zoom"
 
         mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10"
 

@@ -39,6 +39,15 @@ public class MainMenu extends Activity {
             }
         });
 
+        final Button fragButton = findViewById(R.id.frag_btn);
+        fragButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                Intent mapAct3 = new Intent(MainMenu.this, MapBoxFragments.class);
+                startActivity(mapAct3);
+            }
+        });
+
 
 
     }
