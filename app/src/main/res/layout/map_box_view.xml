@@ -8,27 +8,27 @@
     android:id="@+id/relativeLayout">
 
     <com.mapbox.mapboxsdk.maps.MapView
-        android:id="@+id/mapViewBox"
-        android:layout_width="match_parent"
-        android:layout_height="456dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        mapbox:layout_constraintBottom_toBottomOf="parent"
-        mapbox:layout_constraintEnd_toEndOf="parent"
-        mapbox:layout_constraintStart_toStartOf="parent"
-        mapbox:layout_constraintTop_toTopOf="parent"
-        mapbox:layout_constraintVertical_bias="0.0"
-        mapbox:mapbox_cameraTargetLat="@string/start_lat"
-        mapbox:mapbox_cameraTargetLng="@string/start_long"
-        mapbox:mapbox_cameraZoom="@integer/start_zoom"
+    android:id="@+id/mapViewBox"
+    android:layout_width="match_parent"
+    android:layout_height="456dp"
+    android:layout_marginBottom="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
+    mapbox:layout_constraintBottom_toBottomOf="parent"
+    mapbox:layout_constraintEnd_toEndOf="parent"
+    mapbox:layout_constraintStart_toStartOf="parent"
+    mapbox:layout_constraintTop_toTopOf="parent"
+    mapbox:layout_constraintVertical_bias="0.0"
+    mapbox:mapbox_cameraTargetLat="@string/start_lat"
+    mapbox:mapbox_cameraTargetLng="@string/start_long"
+    mapbox:mapbox_cameraZoom="@integer/start_zoom"
 
-        mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10"
+    mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10"
 
-        />
+    />
 
     <Button
         android:id="@+id/OE"

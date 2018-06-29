@@ -11,4 +11,7 @@
     <string name="noite_dia">Noite ou Dia</string>
     <string name="navegar">Navegar</string>
     <string name="mapbox_fragments">MapBox Fragments</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
