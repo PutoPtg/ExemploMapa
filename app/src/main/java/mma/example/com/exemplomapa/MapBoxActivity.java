@@ -1,16 +1,14 @@
 package mma.example.com.exemplomapa;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.Window;
 import android.view.WindowManager;
@@ -54,7 +52,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class MapBoxActivity extends Activity implements OnMapReadyCallback, LocationEngineListener,
+public class MapBoxActivity extends AppCompatActivity implements OnMapReadyCallback, LocationEngineListener,
         PermissionsListener, MapboxMap.OnMapClickListener {
 
     private MapView mapView;

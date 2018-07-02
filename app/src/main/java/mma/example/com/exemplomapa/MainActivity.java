@@ -1,7 +1,6 @@
 package mma.example.com.exemplomapa;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +15,7 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
@@ -24,18 +24,27 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class MainActivity extends Activity {
+/**
+ * A very complicated system for asking for permissions
+ *
+ */
+
+public class MainActivity extends AppCompatActivity {
 
     private VariablesClass myVariables;
     private Switch switchGPS;
     private Switch switchSDC;
 
+
+    /**
+     * Called when the activity is created
+     *
+     * @param savedInstanceState Receives a bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE); //esconde o título da janela
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); //remove barra de notificação
-        setContentView(R.layout.activity_main); //Colocar após os dois anteriores para evitar crashes
+        setContentView(R.layout.activity_main);
 
         //inicializar variáveis
         myVariables = new VariablesClass(0, 1, 2);
@@ -59,6 +68,10 @@ public class MainActivity extends Activity {
     }
 
 
+    /**
+     * Verifies if the app has permissions.
+     *
+     */
     private void verifyPermitions() {
 
         //passo 2 - Verificar permissões
@@ -127,6 +140,12 @@ public class MainActivity extends Activity {
             }
     }
 
+    /**
+     * Catches the user responses granting or denying permissions
+     * @param requestCode Pemissions code INTEGER
+     * @param permissions Permissions List of the app
+     * @param grantResults  Results from the user
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         // 5 - Tratar da resposta
@@ -259,6 +278,11 @@ public class MainActivity extends Activity {
 
     }
 
+    /**
+     * Asks for a determine permissions
+     *
+     * @param i permission code, 0 to GPS and 1 to Storage Write
+     */
     private void requestPermission(int i) {
         //4 - Pedir permissão
 
@@ -270,6 +294,10 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * On Restart override to reactivate the permissions test
+     *
+     */
     @Override
     protected void onRestart() {
 
@@ -284,6 +312,10 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Verifies the android version before asking or not for permissions
+     *
+     */
     @Override
     protected void onStart() {
 
@@ -298,6 +330,10 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Verifies the permissions and call the menu activity after a pause
+     *
+     */
     @Override
     protected void onResume() {
 

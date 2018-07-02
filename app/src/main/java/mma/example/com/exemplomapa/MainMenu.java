@@ -1,24 +1,22 @@
 package mma.example.com.exemplomapa;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
+/**
+ * Implements a simple menu for switching between maps
+ *
+ */
+public class MainMenu extends AppCompatActivity {
 
 
-
-public class MainMenu extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE); //esconde o título da janela
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); //remove barra de notificação
-        setContentView(R.layout.menu_main); //Colocar após os dois anteriores para evitar crashes
+        setContentView(R.layout.menu_main);
 
 
         final Button mapbutton = findViewById(R.id.map_btn);
@@ -48,7 +46,36 @@ public class MainMenu extends Activity {
             }
         });
 
+    }
 
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 }
